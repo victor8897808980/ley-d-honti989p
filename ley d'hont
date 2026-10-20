@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Assignació de diputats — València</title>
+
+    <style>
+        :root {
+            --primary: #b42332;
+            --primary-dark: #871b27;
+            --background: #f4f6fa;
+            --surface: #ffffff;
+            --text: #202938;
+            --muted: #687386;
+            --border: #e0e5ed;
+            --success: #16845b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--background);
+            color: var(--text);
+        }
+
+        header {
+            background: linear-gradient(135deg, #871b27, #c53c48);
+            color: white;
+            padding: 36px 20px;
+        }
+
+        .header-content,
+        main {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        header h1 {
+            margin: 0 0 12px;
+            font-size: clamp(25px, 4vw, 38px);
+        }
+
+        header p {
+            margin: 0;
+            line-height: 1.6;
+            opacity: .95;
+        }
+
+        main {
+            padding: 25px 16px 45px;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(20, 35, 60, .04);
+        }
+
+        h2 {
+            font-size: 21px;
+            margin: 0 0 18px;
+        }
+
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1px solid #cbd3df;
+            border-radius: 8px;
+            font-size: 15px;
+            color: var(--text);
+            background: white;
+        }
+
+        input:focus {
+            outline: 2px solid #e7a4aa;
+            border-color: var(--primary);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+            margin-top: 7px;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #f8f9fc;
+            color: #4c5769;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        td input {
+            min-width: 100px;
+        }
+
+        td:first-child input {
+            min-width: 145px;
+        }
+
+        .number {
+            text-align: right;
+        }
+
+        .btn {
+            border: 0;
+            border-radius: 8px;
+            padding: 11px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            transition: opacity .15s;
+        }
+
+        .btn:hover {
+            opacity: .85;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #edf0f5;
+            color: #293446;
+        }
+
+        .btn-delete {
+            background: #fff0f0;
+            color: #b42332;
+            padding: 8px 11px;
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .stat {
+            background: #f8f9fc;
+            border: 1px solid var(--border);
+            border-radius: 11px;
+            padding: 17px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 9px;
+        }
+
+        .stat-value {
+            font-size: 27px;
+            font-weight: 800;
+        }
+
+        .results-list {
+            display: grid;
+            gap: 17px;
+            margin-top: 20px;
+        }
+
+        .result-row {
+            display: grid;
+            grid-template-columns: minmax(100px, 170px) 1fr 65px;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .party-name {
+            font-size: 14px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .bar-track {
+            height: 24px;
+            background: #edf0f5;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .bar {
+            height: 100%;
+            min-width: 0;
+            border-radius: 5px;
+            transition: width .25s;
+        }
+
+        .seats {
+            text-align: right;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            margin-top: 20px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+        }
+
+        .dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 3px;
+        }
+
+        .empty {
+            padding: 20px;
+            color: var(--muted);
+            text-align: center;
+        }
+
+        .notice {
+            background: #fff7e8;
+            border: 1px solid #f0d9a9;
+            color: #74531b;
+            border-radius: 9px;
+            padding: 13px 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 16px;
+        }
+
+        .status {
+            color: var(--success);
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--muted);
+            font-size: 12px;
+            padding: 10px 20px 30px;
+        }
+
+        @media (max-width: 600px) {
+            .card {
+                padding: 16px;
+            }
+
+            .result-row {
+                grid-template-columns: 90px 1fr 48px;
+                gap: 8px;
+            }
+
+            .party-name {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 9px 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <div class="header-content">
+        <h1>Assignació de diputats</h1>
+        <p>Província de València · Sistema electoral D'Hondt</p>
+    </div>
+</header>
+
+<main>
+
+    <section class="card">
+        <h2>1. Configuració electoral</h2>
+
+        <div class="settings">
+            <div>
+                <label for="totalSeats">Nombre de diputats</label>
+                <input id="totalSeats" type="number"
+                       min="1" max="500" step="1" value="16">
+                <div class="hint">
+                    Nombre total d'escons que s'han de repartir.
+                </div>
+            </div>
+
+            <div>
+                <label for="threshold">Llindar electoral (%)</label>
+                <input id="threshold" type="number"
+                       min="0" max="100" step="0.1" value="3">
+                <div class="hint">
+                    Percentatge mínim de vots per a participar
+                    en el repartiment.
+                </div>
+            </div>
+        </div>
+
+        <div class="notice">
+            Configuració inicial orientativa per a les eleccions generals
+            al Congrés: 16 diputats i llindar del 3% dels vots vàlids.
+            El llindar s'aplica als vots introduïts en aquesta simulació.
+            Comprova la normativa aplicable a la convocatòria concreta.
+        </div>
+    </section>
+
+
+    <section class="card">
+        <h2>2. Partits i vots</h2>
+
+        <p class="hint">
+            Pots modificar qualsevol nom o quantitat. Els resultats
+            es recalcularan automàticament.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Partit polític</th>
+                        <th class="number">Nombre de vots</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="partyTable"></tbody>
+            </table>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="addParty">
+                + Afegir partit
+            </button>
+
+            <button class="btn btn-secondary" id="reset">
+                Restaurar exemple
+            </button>
+        </div>
+
+        <div id="status" class="status" aria-live="polite"></div>
+    </section>
+
+
+    <section class="card">
+        <h2>3. Resultat de l'assignació</h2>
+
+        <div class="summary">
+            <div class="stat">
+                <div class="stat-label">Vots totals introduïts</div>
+                <div class="stat-value" id="totalVotes">0</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">Escons assignats</div>
+                <div class="stat-value" id="assignedSeats">0</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">Escons pendents</div>
+                <div class="stat-value" id="remainingSeats">0</div>
+            </div>
+
+            <div class="stat">
+                <div class="stat-label">Partits amb representació</div>
+                <div class="stat-value" id="representedParties">0</div>
+            </div>
+        </div>
+
+        <h2 style="font-size:17px; margin-top:25px;">
+            Distribució dels escons
+        </h2>
+
+        <div id="results" class="results-list"></div>
+        <div id="legend" class="legend"></div>
+    </section>
+
+
+    <section class="card">
+        <h2>4. Detall del repartiment</h2>
+
+        <p class="hint">
+            Cada escó s'assigna al partit amb el quocient més alt:
+            vots dividits entre 1, 2, 3, 4... fins al nombre
+            d'escons que podria obtindre.
+        </p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Escó</th>
+                        <th>Partit beneficiari</th>
+                        <th class="number">Quocient</th>
+                        <th class="number">Vots / divisor</th>
+                    </tr>
+                </thead>
+                <tbody id="detailTable"></tbody>
+            </table>
+        </div>
+
+        <div class="notice">
+            Els resultats són una simulació matemàtica basada en les dades
+            introduïdes, no un resultat electoral oficial. Els empats
+            exactes es resolen segons l'ordre dels partits en la taula.
+        </div>
+    </section>
+
+</main>
+
+<footer>
+    Simulador electoral · Sistema D'Hondt · Les dades s'utilitzen
+    localment en aquesta pàgina.
+</footer>
+
+
+<script>
+    const colors = [
+        "#b42332",
+        "#2463a6",
+        "#16845b",
+        "#e2a126",
+        "#7651a8",
+        "#008c95",
+        "#d46a2c",
+        "#64748b",
+        "#d34d87",
+        "#668b32",
+        "#5746bd",
+        "#91613b"
+    ];
+
+    const initialParties = [
+        { name: "Partit A", votes: 450000 },
+        { name: "Partit B", votes: 350000 },
+        { name: "Partit C", votes: 200000 },
+        { name: "Partit D", votes: 120000 },
+        { name: "Partit E", votes: 80000 }
+    ];
+
+    let parties = initialParties.map(p => ({ ...p }));
+
+    const partyTable = document.getElementById("partyTable");
+    const totalSeatsInput = document.getElementById("totalSeats");
+    const thresholdInput = document.getElementById("threshold");
+
+    const formatNumber = number =>
+        new Intl.NumberFormat("ca-ES", {
+            maximumFractionDigits: 2
+        }).format(number);
+
+    function renderParties() {
+        partyTable.innerHTML = "";
+
+        parties.forEach((party, index) => {
+            const row = document.createElement("tr");
+
+            const nameCell = document.createElement("td");
+            const nameInput = document.createElement("input");
+
+            nameInput.type = "text";
+            nameInput.value = party.name;
+            nameInput.maxLength = 80;
+            nameInput.setAttribute(
+                "aria-label",
+                "Nom del partit " + (index + 1)
+            );
+
+            nameInput.addEventListener("input", () => {
+                parties[index].name = nameInput.value;
+                calculate();
+            });
+
+            nameCell.appendChild(nameInput);
+
+            const votesCell = document.createElement("td");
+            votesCell.className = "number";
+
+            const votesInput = document.createElement("input");
+            votesInput.type = "number";
+            votesInput.min = "0";
+            votesInput.step = "1";
+            votesInput.value = party.votes;
+            votesInput.setAttribute(
+                "aria-label",
+                "Vots del partit " + (index + 1)
+            );
+
+            votesInput.addEventListener("input", () => {
+                const value = Number(votesInput.value);
+
+                parties[index].votes =
+                    votesInput.value === "" ? 0 :
+                    Number.isFinite(value) ? Math.max(0, value) : 0;
+
+                calculate();
+            });
+
+            votesCell.appendChild(votesInput);
+
+            const deleteCell = document.createElement("td");
+            const deleteButton = document.createElement("button");
+
+            deleteButton.className = "btn btn-delete";
+            deleteButton.textContent = "Eliminar";
+            deleteButton.setAttribute(
+                "aria-label",
+                "Eliminar " + party.name
+            );
+
+            deleteButton.addEventListener("click", () => {
+                parties.splice(index, 1);
+                renderParties();
+                calculate();
+            });
+
+            deleteCell.appendChild(deleteButton);
+
+            row.append(nameCell, votesCell, deleteCell);
+            partyTable.appendChild(row);
+        });
+    }
+
+    function calculate() {
+        const seats = Number(totalSeatsInput.value);
+        const threshold = Number(thresholdInput.value);
+
+        if (
+            !Number.isInteger(seats) ||
+            seats < 1 ||
+            seats > 500 ||
+            !Number.isFinite(threshold) ||
+            threshold < 0 ||
+            threshold > 100
+        ) {
+            document.getElementById("status").textContent =
+                "Introdueix un nombre d'escons entre 1 i 500 " +
+                "i un llindar entre 0% i 100%.";
+
+            return;
+        }
+
+        const totalVotes = parties.reduce(
+            (sum, party) => sum + party.votes,
+            0
+        );
+
+        const validParties = parties
+            .map((party, index) => ({
+                ...party,
+                originalIndex: index,
+                seats: 0,
+                color: colors[index % colors.length]
+            }))
+            .filter(party =>
+                party.name.trim() !== "" &&
+                party.votes > 0 &&
+                totalVotes > 0 &&
+                party.votes / totalVotes * 100 + 1e-10 >= threshold
+            );
+
+        const quotients = [];
+
+        validParties.forEach(party => {
+            for (let divisor = 1; divisor <= seats; divisor++) {
+                quotients.push({
+                    party,
+                    divisor,
+                    quotient: party.votes / divisor
+                });
+            }
+        });
+
+        // Ordenació dels quocients de major a menor.
+        // En cas d'empat, es prioritza l'ordre original dels partits.
+        quotients.sort((a, b) =>
+            b.quotient - a.quotient ||
+            a.party.originalIndex - b.party.originalIndex ||
+            a.divisor - b.divisor
+        );
+
+        const winners = quotients.slice(0, seats);
+
+        winners.forEach(winner => {
+            winner.party.seats++;
+        });
+
+        const assigned = winners.length;
+        const remaining = seats - assigned;
+
+        document.getElementById("totalVotes").textContent =
+            formatNumber(totalVotes);
+
+        document.getElementById("assignedSeats").textContent =
+            assigned;
+
+        document.getElementById("remainingSeats").textContent =
+            remaining;
+
+        document.getElementById("representedParties").textContent =
+            validParties.filter(p => p.seats > 0).length;
+
+        document.getElementById("status").textContent =
+            "Càlcul actualitzat correctament.";
+
+        renderResults(validParties, totalVotes);
+        renderDetails(winners);
+    }
+
+    function renderResults(validParties, totalVotes) {
+        const results = document.getElementById("results");
+        const legend = document.getElementById("legend");
+
+        results.innerHTML = "";
+        legend.innerHTML = "";
+
+        const sorted = [...parties]
+            .map((party, index) => ({
+                ...party,
+                originalIndex: index,
+                color: colors[index % colors.length]
+            }))
+            .map(party => {
+                const result = validParties.find(
+                    p => p.originalIndex === party.originalIndex
+                );
+
+                return {
+                    ...party,
+                    seats: result ? result.seats : 0,
+                    eligible: Boolean(result)
+                };
+            })
+            .sort((a, b) =>
+                b.seats - a.seats ||
+                b.votes - a.votes
+            );
+
+        if (sorted.length === 0) {
+            results.innerHTML =
+                '<div class="empty">Afig almenys un partit amb vots.</div>';
+            return;
+        }
+
+        const maxSeats = Math.max(
+            1,
+            Number(totalSeatsInput.value)
+        );
+
+        sorted.forEach(party => {
+            const row = document.createElement("div");
+            row.className = "result-row";
+
+            const name = document.createElement("div");
+            name.className = "party-name";
+            name.textContent = party.name || "(Sense nom)";
+
+            const track = document.createElement("div");
+            track.className = "bar-track";
+
+            const bar = document.createElement("div");
+            bar.className = "bar";
+            bar.style.width =
+                (party.seats / maxSeats * 100) + "%";
+            bar.style.backgroundColor = party.color;
+
+            track.appendChild(bar);
+
+            const seats = document.createElement("div");
+            seats.className = "seats";
+            seats.textContent =
+                party.seats + (party.seats === 1 ? " escó" : " escons");
+
+            row.append(name, track, seats);
+            results.appendChild(row);
+
+            const legendItem = document.createElement("div");
+            legendItem.className = "legend-item";
+
+            const dot = document.createElement("span");
+            dot.className = "dot";
+            dot.style.backgroundColor = party.color;
+
+            const text = document.createElement("span");
+            const percentage = totalVotes > 0
+                ? (party.votes / totalVotes * 100).toFixed(2)
+                : "0.00";
+
+            text.textContent =
+                `${party.name || "(Sense nom)"}: ` +
+                `${formatNumber(party.votes)} vots (${percentage}%)`;
+
+            if (!party.eligible && party.votes > 0) {
+                text.textContent += " · Fora del llindar";
+            }
+
+            legendItem.append(dot, text);
+            legend.appendChild(legendItem);
+        });
+    }
+
+    function renderDetails(winners) {
+        const detailTable = document.getElementById("detailTable");
+        detailTable.innerHTML = "";
+
+        if (winners.length === 0) {
+            detailTable.innerHTML =
+                '<tr><td colspan="4" class="empty">' +
+                "No hi ha escons assignats." +
+                "</td></tr>";
+            return;
+        }
+
+        winners.forEach((winner, index) => {
+            const row = document.createElement("tr");
+
+            const seatCell = document.createElement("td");
+            seatCell.textContent = index + 1;
+
+            const partyCell = document.createElement("td");
+            partyCell.textContent = winner.party.name;
+
+            const quotientCell = document.createElement("td");
+            quotientCell.className = "number";
+            quotientCell.textContent =
+                formatNumber(winner.quotient);
+
+            const calculationCell = document.createElement("td");
+            calculationCell.className = "number";
+            calculationCell.textContent =
+                `${formatNumber(winner.party.votes)} / ${winner.divisor}`;
+
+            row.append(
+                seatCell,
+                partyCell,
+                quotientCell,
+                calculationCell
+            );
+
+            detailTable.appendChild(row);
+        });
+    }
+
+    document.getElementById("addParty").addEventListener("click", () => {
+        parties.push({
+            name: "Partit " + String.fromCharCode(
+                65 + (parties.length % 26)
+            ),
+            votes: 0
+        });
+
+        renderParties();
+        calculate();
+    });
+
+    document.getElementById("reset").addEventListener("click", () => {
+        parties = initialParties.map(p => ({ ...p }));
+        totalSeatsInput.value = 16;
+        thresholdInput.value = 3;
+
+        renderParties();
+        calculate();
+    });
+
+    totalSeatsInput.addEventListener("input", calculate);
+    thresholdInput.addEventListener("input", calculate);
+
+    renderParties();
+    calculate();
+</script>
+
+</body>
+</html>
